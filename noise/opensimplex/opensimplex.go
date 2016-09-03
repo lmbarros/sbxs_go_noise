@@ -1,7 +1,5 @@
 package opensimplex
 
-import "math"
-
 const (
 	stretchConstant2D = -0.211324865405187 // (1/Math.sqrt(2+1)-1)/2
 	squishConstant2D  = 0.366025403784439  // (Math.sqrt(2+1)-1)/2
@@ -70,8 +68,8 @@ func (s *Noise) Noise2D(x, y float64) float64 {
 	ys := float64(y + stretchOffset)
 
 	// Floor to get grid coordinates of rhombus (stretched square) super-cell origin.
-	xsb := int32(math.Floor(xs))
-	ysb := int32(math.Floor(ys))
+	xsb := fastFloor(xs)
+	ysb := fastFloor(ys)
 
 	// Skew out to get actual coordinates of rhombus origin. We'll need these later.
 	squishOffset := float64(xsb+ysb) * squishConstant2D
@@ -186,9 +184,9 @@ func (s *Noise) Noise3D(x, y, z float64) float64 {
 	zs := float64(z + stretchOffset)
 
 	// Floor to get simplectic honeycomb coordinates of rhombohedron (stretched cube) super-cell origin.
-	xsb := int32(math.Floor(xs))
-	ysb := int32(math.Floor(ys))
-	zsb := int32(math.Floor(zs))
+	xsb := fastFloor(xs)
+	ysb := fastFloor(ys)
+	zsb := fastFloor(zs)
 
 	// Skew out to get actual coordinates of rhombohedron origin. We'll need these later.
 	squishOffset := float64(xsb+ysb+zsb) * squishConstant3D
@@ -774,10 +772,10 @@ func (s *Noise) Noise4D(x, y, z, w float64) float64 {
 	ws := w + stretchOffset
 
 	// Floor to get simplectic honeycomb coordinates of rhombo-hypercube super-cell origin.
-	xsb := int32(math.Floor(xs))
-	ysb := int32(math.Floor(ys))
-	zsb := int32(math.Floor(zs))
-	wsb := int32(math.Floor(ws))
+	xsb := fastFloor(xs)
+	ysb := fastFloor(ys)
+	zsb := fastFloor(zs)
+	wsb := fastFloor(ws)
 
 	// Skew out to get actual coordinates of stretched rhombo-hypercube origin. We'll need these later.
 	squishOffset := float64(xsb+ysb+zsb+wsb) * squishConstant4D
@@ -2238,6 +2236,17 @@ func (s *Noise) extrapolate3(xsb, ysb, zsb int32, dx, dy, dz float64) float64 {
 func (s *Noise) extrapolate4(xsb, ysb, zsb, wsb int32, dx, dy, dz, dw float64) float64 {
 	index := s.perm[(int32(s.perm[(int32(s.perm[(int32(s.perm[xsb&0xFF])+ysb)&0xFF])+zsb)&0xFF])+wsb)&0xFF] & 0xFC
 	return float64(gradients4D[index])*dx + float64(gradients4D[index+1])*dy + float64(gradients4D[index+2])*dz + float64(gradients4D[index+3])*dw
+}
+
+// fastFloor does the equivalent to math.Floor, but faster.
+//
+// I (Leandro Motta Barros) benchmarked it. I got improvements ranging from 10%
+// (for 4D) up to over 20% (for 2D). Not bad.
+func fastFloor(x float64) int32 {
+	if x > 0 {
+		return int32(x)
+	}
+	return int32(x - 1)
 }
 
 // Gradients for 2D. They approximate the directions to the
