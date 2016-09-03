@@ -1,8 +1,9 @@
-// Note by Leandro Motta Barros: This nice test for OpenSimplex Noise kind of
-// goes in the same vein as the tests I did in my D (dlang) implementation (see
-// https://github.com/lmbarros/sbxs_dlang/blob/master/src/sbxs/noise/open_simplex_noise.d).
-// These Go tests, however, are just as originaly written by Owen Raccuglia (who
-// clearly knows Go much better than I do, by the way).
+// Note by Leandro Motta Barros: The nice tests for OpenSimplex Noise were
+// originally written by Owen Raccuglia. They kind of go in the same vein as
+// the tests I did in my D (dlang) OpenSimples Nose implementation (see
+// https://github.com/lmbarros/sbxs_dlang/blob/master/src/sbxs/noise/open_simplex_noise.d),
+// but the credits of this code go to Owen (who clearly knows Go much better
+// than I do, by the way), not to me, who just added a few simple benchmarks.
 
 // Tests for OpenSimplex noise, based on the output of
 // the Java implementation.
@@ -85,5 +86,32 @@ func TestSamplesMatch(t *testing.T) {
 			t.Fatalf("Expected %v, got %v for %dD sample at %v",
 				expected, actual, len(s)-1, s[:len(s)-1])
 		}
+	}
+}
+
+// Benchamrks 2D noise generation
+func Benchmark2D(b *testing.B) {
+	noise := New()
+
+	for i := 0; i < b.N; i++ {
+		noise.Noise2D(float64(i), float64(i))
+	}
+}
+
+// Benchamrks 3D noise generation
+func Benchmark3D(b *testing.B) {
+	noise := New()
+
+	for i := 0; i < b.N; i++ {
+		noise.Noise3D(float64(i), float64(i), float64(i))
+	}
+}
+
+// Benchamrks 4D noise generation
+func Benchmark4D(b *testing.B) {
+	noise := New()
+
+	for i := 0; i < b.N; i++ {
+		noise.Noise4D(float64(i), float64(i), float64(i), float64(i))
 	}
 }
