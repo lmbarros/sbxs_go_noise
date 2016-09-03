@@ -89,7 +89,7 @@ func TestSamplesMatch(t *testing.T) {
 	}
 }
 
-// Benchamrks 2D noise generation
+// Benchmarks 2D noise generation
 func Benchmark2D(b *testing.B) {
 	noise := New()
 
@@ -98,7 +98,7 @@ func Benchmark2D(b *testing.B) {
 	}
 }
 
-// Benchamrks 3D noise generation
+// Benchmarks 3D noise generation
 func Benchmark3D(b *testing.B) {
 	noise := New()
 
@@ -107,7 +107,7 @@ func Benchmark3D(b *testing.B) {
 	}
 }
 
-// Benchamrks 4D noise generation
+// Benchmarks 4D noise generation
 func Benchmark4D(b *testing.B) {
 	noise := New()
 
