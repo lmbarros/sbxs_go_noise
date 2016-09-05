@@ -62,12 +62,122 @@ func NewWithSeed(seed int64) *Noise {
 // Noise1D generates and returns a random noise value in one dimension, sampled
 // at a given coordinate.
 //
-// The current implementation is kind of fake. It actually just calls the 2D
-// noise function along a fixed straight line. By the way, as of Go 1.7, this is
-// much slower than Noise2D (is all this just because the call is not being
-// inlined?)
+// The current implementation is kind of fake. It actually just does the same as
+// the 2D noise function, but along a fixed y = 0.0. A real 1D implementation
+// would be much faster, I guess. (By the way, as of Go 1.7, simply calling
+// Noise2D(x, 0.0) is quite slower than repeating the whole implementation --
+// lack of inlining, perhaps?)
 func (s *Noise) Noise1D(x float64) float64 {
-	return s.Noise2D(x, 0.0)
+	// Place input coordinates onto grid.
+	stretchOffset := x * stretchConstant2D
+	xs := float64(x + stretchOffset)
+	ys := float64(stretchOffset)
+
+	// Floor to get grid coordinates of rhombus (stretched square) super-cell origin.
+	xsb := fastFloor(xs)
+	ysb := fastFloor(ys)
+
+	// Skew out to get actual coordinates of rhombus origin. We'll need these later.
+	squishOffset := float64(xsb+ysb) * squishConstant2D
+	xb := float64(xsb) + squishOffset
+	yb := float64(ysb) + squishOffset
+
+	// Compute grid coordinates relative to rhombus origin.
+	xins := xs - float64(xsb)
+	yins := ys - float64(ysb)
+
+	// Sum those together to get a value that determines which region we're in.
+	inSum := xins + yins
+
+	// Positions relative to origin point.
+	dx0 := x - xb
+	dy0 := -yb
+
+	// We'll be defining these inside the next block and using them afterwards.
+	var dxExt, dyExt float64
+	var xsvExt, ysvExt int32
+
+	value := float64(0)
+
+	// Contribution (1,0)
+	dx1 := dx0 - 1 - squishConstant2D
+	dy1 := dy0 - 0 - squishConstant2D
+	attn1 := 2 - dx1*dx1 - dy1*dy1
+	if attn1 > 0 {
+		attn1 *= attn1
+		value += attn1 * attn1 * s.extrapolate2(xsb+1, ysb+0, dx1, dy1)
+	}
+
+	// Contribution (0,1)
+	dx2 := dx0 - 0 - squishConstant2D
+	dy2 := dy0 - 1 - squishConstant2D
+	attn2 := 2 - dx2*dx2 - dy2*dy2
+	if attn2 > 0 {
+		attn2 *= attn2
+		value += attn2 * attn2 * s.extrapolate2(xsb+0, ysb+1, dx2, dy2)
+	}
+
+	if inSum <= 1 { // We're inside the triangle (2-Simplex) at (0,0)
+		zins := 1 - inSum
+		if zins > xins || zins > yins { // (0,0) is one of the closest two triangular vertices
+			if xins > yins {
+				xsvExt = xsb + 1
+				ysvExt = ysb - 1
+				dxExt = dx0 - 1
+				dyExt = dy0 + 1
+			} else {
+				xsvExt = xsb - 1
+				ysvExt = ysb + 1
+				dxExt = dx0 + 1
+				dyExt = dy0 - 1
+			}
+		} else { // (1,0) and (0,1) are the closest two vertices.
+			xsvExt = xsb + 1
+			ysvExt = ysb + 1
+			dxExt = dx0 - 1 - 2*squishConstant2D
+			dyExt = dy0 - 1 - 2*squishConstant2D
+		}
+	} else { // We're inside the triangle (2-Simplex) at (1,1)
+		zins := 2 - inSum
+		if zins < xins || zins < yins { // (0,0) is one of the closest two triangular vertices
+			if xins > yins {
+				xsvExt = xsb + 2
+				ysvExt = ysb + 0
+				dxExt = dx0 - 2 - 2*squishConstant2D
+				dyExt = dy0 + 0 - 2*squishConstant2D
+			} else {
+				xsvExt = xsb + 0
+				ysvExt = ysb + 2
+				dxExt = dx0 + 0 - 2*squishConstant2D
+				dyExt = dy0 - 2 - 2*squishConstant2D
+			}
+		} else { // (1,0) and (0,1) are the closest two vertices.
+			dxExt = dx0
+			dyExt = dy0
+			xsvExt = xsb
+			ysvExt = ysb
+		}
+		xsb++
+		ysb++
+		dx0 = dx0 - 1 - 2*squishConstant2D
+		dy0 = dy0 - 1 - 2*squishConstant2D
+	}
+
+	// Contribution (0,0) or (1,1)
+	attn0 := 2 - dx0*dx0 - dy0*dy0
+	if attn0 > 0 {
+		attn0 *= attn0
+		value += attn0 * attn0 * s.extrapolate2(xsb, ysb, dx0, dy0)
+	}
+
+	// Extra Vertex
+	attnExt := 2 - dxExt*dxExt - dyExt*dyExt
+	if attnExt > 0 {
+		attnExt *= attnExt
+		value += attnExt * attnExt * s.extrapolate2(xsvExt, ysvExt, dxExt, dyExt)
+	}
+
+	return value / normConstant2D
 }
 
 // Noise2D generates and returns a random noise value in two dimensions, sampled
