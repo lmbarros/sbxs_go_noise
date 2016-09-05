@@ -59,6 +59,17 @@ func NewWithSeed(seed int64) *Noise {
 	return &s
 }
 
+// Noise1D generates and returns a random noise value in one dimension, sampled
+// at a given coordinate.
+//
+// The current implementation is kind of fake. It actually just calls the 2D
+// noise function along a fixed straight line. By the way, as of Go 1.7, this is
+// much slower than Noise2D (is all this just because the call is not being
+// inlined?)
+func (s *Noise) Noise1D(x float64) float64 {
+	return s.Noise2D(x, 0.0)
+}
+
 // Noise2D generates and returns a random noise value in two dimensions, sampled
 // at given coordinates.
 func (s *Noise) Noise2D(x, y float64) float64 {

@@ -29,6 +29,8 @@ import (
 	"os"
 	"path"
 	"testing"
+
+	"github.com/lmbarros/sbxs_go_test/test/assert"
 )
 
 func loadSamples() <-chan []float64 {
@@ -62,6 +64,8 @@ func loadSamples() <-chan []float64 {
 	return c
 }
 
+// Compares generated noise values with values generated with the reference Java
+// implementation.
 func TestSamplesMatch(t *testing.T) {
 	samples := loadSamples()
 	n := NewWithSeed(0)
@@ -86,6 +90,26 @@ func TestSamplesMatch(t *testing.T) {
 			t.Fatalf("Expected %v, got %v for %dD sample at %v",
 				expected, actual, len(s)-1, s[:len(s)-1])
 		}
+	}
+}
+
+// Makes sure that the 1D noise behaves as if sampling 2D noise at y = 0.0. This
+// test serves to allow me to try to optmize my "fake 1D" implementation while
+// ensuring that I didn't mess things up.
+func Test1DNoise(t *testing.T) {
+	noise := New()
+
+	for x := -10.0; x < 10.0; x += 0.09 {
+		assert.Equal(t, noise.Noise2D(x, 0.0), noise.Noise1D(x))
+	}
+}
+
+// Benchmarks 1D noise generation
+func Benchmark1D(b *testing.B) {
+	noise := New()
+
+	for i := 0; i < b.N; i++ {
+		noise.Noise1D(float64(i))
 	}
 }
 
