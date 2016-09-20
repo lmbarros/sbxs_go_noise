@@ -1,5 +1,7 @@
 # sbxs_go_noise
 
+[![GoDoc](https://godoc.org/github.com/lmbarros/sbxs_go_noise/noise?status.svg)](https://godoc.org/github.com/lmbarros/sbxs_go_noise/noise) [![Go Report Card](https://goreportcard.com/badge/github.com/lmbarros/sbxs_go_noise)](https://goreportcard.com/report/github.com/lmbarros/sbxs_go_noise) ![License](https://img.shields.io/github/license/lmbarros/sbxs_go_noise.svg)
+
 Noise in Go.
 
 Package `noise` provides basic noise-related types used elsewhere, like the
