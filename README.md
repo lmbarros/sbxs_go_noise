@@ -1,4 +1,4 @@
-# StackedBoxes Noise library in Go
+# StackedBoxes' Noise library in Go
 
 [![GoDoc](https://godoc.org/github.com/lmbarros/sbxs_go_noise?status.svg)](https://godoc.org/github.com/lmbarros/sbxs_go_noise) [![Go Report Card](https://goreportcard.com/badge/github.com/lmbarros/sbxs_go_noise)](https://goreportcard.com/report/github.com/lmbarros/sbxs_go_noise) ![License](https://img.shields.io/github/license/lmbarros/sbxs_go_noise.svg)
 
