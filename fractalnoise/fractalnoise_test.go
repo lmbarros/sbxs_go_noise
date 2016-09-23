@@ -3,7 +3,7 @@ package fractalnoise
 import (
 	"testing"
 
-	"github.com/lmbarros/sbxs_go_noise/noise"
+	"github.com/lmbarros/sbxs_go_noise"
 	"github.com/lmbarros/sbxs_go_test/test/assert"
 )
 

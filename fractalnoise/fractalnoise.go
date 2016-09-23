@@ -1,7 +1,7 @@
 package fractalnoise
 
 import (
-	"github.com/lmbarros/sbxs_go_noise/noise"
+	"github.com/lmbarros/sbxs_go_noise"
 )
 
 // Params contains additional parameters passed to the fractal noise generator
